@@ -5,6 +5,7 @@
 # Idea stuff
 .idea
 **/.idea/*
+!/.idea/*.xml
 !/.idea/icon.png
 !/.idea/vcs.xml
 !/.idea/copyright
