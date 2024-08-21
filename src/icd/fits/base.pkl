@@ -1,0 +1,203 @@
+module icd.fits.base
+
+import "Subsystem.pkl"
+import "Units.pkl"
+import "Channel.pkl"
+
+typealias Type = "float" | "string" | "integer"
+hidden const FLOAT = "float"
+hidden const STRING = "string"
+hidden const INTEGER = "integer"
+
+hidden const FITSLENGTH = 8
+
+class Keyword {
+  name: String(length <= FITSLENGTH)
+  description: String(length <= 120)
+  type: Type
+  units: Units.Units = Units.NOUNITS
+  sources: Listing<Source>
+
+  function withD(_description: String): Keyword =
+    (this) {
+      description = _description
+    }
+
+  function addSource(_source: Source): Keyword =
+     (this) {
+      sources { _source }
+     }
+
+  function source(_subsystem: Subsystem.Subsystem, _channel: Channel.Channel, _fitsComment: String, _componentName: String, _eventName: String, _parameterName: String): Keyword =
+    (this) {
+      sources {
+        new {
+          subsystem = _subsystem
+          channel = _channel
+          fitsComment = _fitsComment
+          componentName = _componentName
+          eventName = _eventName
+          parameterName = _parameterName
+        }
+      }
+    }
+}
+
+// This function will make a keyword caps and throw exception if too long
+function kkey(_key: String): String =
+  if (_key.length <= FITSLENGTH)
+    _key.toUpperCase()
+  else
+    throw("Keyword length must be <= \(FITSLENGTH)")
+
+
+class Source {
+  subsystem: Subsystem.Subsystem = Subsystem.ENC
+  channel: Channel.Channel
+  fitsComment: String = ""
+  componentName: String = ""
+  eventName: String = ""
+  parameterName: String = ""
+}
+
+
+function keyword(_name: String, _description: String, _type: Type, _units: Units.Units): Keyword =
+  new {
+    name = _name.toUpperCase()
+    description = _description
+    type = _type
+    units = _units
+  }
+
+function keyword2(_name: String, _description: String): Keyword =
+  new {
+    name = _name.toUpperCase()
+    description = _description
+  }
+
+function source(_subsystem: Subsystem.Subsystem, _channel: Channel.Channel, _fitsComment: String, _componentName: String, _eventName: String, _parameterName: String): Source =
+  new {
+    subsystem = _subsystem
+    channel = _channel
+    fitsComment = _fitsComment
+    componentName = _componentName
+    eventName = _eventName
+    parameterName = _parameterName
+  }
+
+
+// This example creates a list of Keywords and adds sources inline
+fitsKeyInfo2 = new Listing<Keyword>  {
+  default {
+    type = STRING
+    units = Units.NOUNITS
+  }
+
+  // Create PKL style
+  new {
+    name = "DATE"
+    description = "Creation date of HDU: ‘yyyy-mm-dd’ or ‘yyyy-mm-ddTHH:MM:SS[.sss]’"
+  }
+
+  // Specify a couple common parameters and ammend, add source
+  (keyword2("date-obs", "checking")) {
+    type = FLOAT
+  }.source(
+    Subsystem.IRIS, "IRIS-IFS", "The Filter Value", "detector", "filter", "state"
+  )
+
+  // Example 1: add source when keyword is added
+  keyword("filter", "Instrument primary filter name", STRING, Units.NOUNITS).
+  withD("This is a better description").
+  addSource(source(Subsystem.IRIS, "IRIS-IFS", "The Filter Value", "detector", "filter", "state" )).
+  addSource(source(Subsystem.IRIS, Channel.IRIS_IMAGER, "The Filter Value", "detector", "filter", "state" ))
+
+}
+
+// FTIS Dictoinary as a map with only keyword info
+fitsDictionary = new Mapping<String,Keyword> {
+  default { key ->
+    name = kkey(key)
+    type = STRING
+    units = Units.NOUNITS
+  }
+
+  ["DATE"] {
+    description = "Creation date of HDU: ‘yyyy-mm-dd’ or ‘yyyy-mm-ddTHH:MM:SS[.sss]’"
+  }
+
+  ["DATE-OBS"] {
+    description = "Creation date of the observation: ‘yyyy-mm-dd’ or ‘yyyy-mm-ddTHH:MM:SS[.sss]’"
+  }
+
+  ["OBJECT"] {
+    description = "The name or type of the object observed"
+  }
+
+  ["CRPIX1"] {
+    description = "This is the X coordinate of the reference pixel in the image"
+    type = FLOAT
+  }
+
+  ["CRPIX2"] {
+    description = "This is the Y coordinate of the reference pixel in the image"
+    type = FLOAT
+  }
+
+  ["RA"] {
+    description = "Current right ascension (ICRS, at equinox)"
+    type = FLOAT
+    units = Units.DEGREES
+  }
+
+  ["DEC"] {
+    description = "Current declination (ICRS, at equinox)"
+    type = FLOAT
+    units = Units.DEGREES
+  }
+
+  ["FILTER"] {
+    description = "Instrumment primary filter name."
+  }
+
+  ["COADDS"] {
+    description = "Number of co-additions in the exposure"
+    type = INTEGER
+  }
+}
+
+// Create the FitsKeyInfo using dictionary and adding sources to create close to current
+// But all sources have a channel
+fitsKeyInfo = new Listing<Keyword> {
+  default {
+    type = STRING
+    units = Units.NOUNITS
+  }
+
+  fitsDictionary["CRPIX1"].
+    source(Subsystem.TCS, Channel.TCS, "CRPIX1 for WCS", "PointingKernelAssembly", "WCSFITSHeader", "CRPIX1")
+  fitsDictionary["CRPIX2"].
+    source(Subsystem.TCS, Channel.TCS, "CRPIX2 for WCS", "PointingKernelAssembly", "WCSFITSHeader", "CRPIX2")
+  fitsDictionary["RA"].
+    source(Subsystem.TCS, Channel.TCS, "RA of tracking position", "pk", "currentPosition", "ra")
+  fitsDictionary["DEC"].
+    source(Subsystem.TCS, Channel.TCS, "Declination of tracking position", "pk", "currentPosition", "dec")
+
+  fitsDictionary["FILTER"].
+    source(Subsystem.IRIS, Channel.IRIS_IMAGER, "IRIS imager filter", "imager.filter", "current", "name").
+    source(Subsystem.WFOS, Channel.WFOS_BLUE, "WFOS Blue imager filter", "blue.filter", "current", "name").
+    source(Subsystem.WFOS, Channel.WFOS_RED, "WFOS Red imager filter", "red.filter", "current", "name")
+
+  fitsDictionary["COADDS"].
+    source(Subsystem.IRIS, Channel.IRIS_IMAGER, "IRIS imager coadds", "is", "imagerObserveSettings", "numRamps").
+    source(Subsystem.IRIS, Channel.IRIS_IFS, "IRIS ifs coadds", "is", "ifsObserveSettings", "numRamps")
+
+}
+
+
+
+output {
+  renderer = new JsonRenderer {}
+}
+
+

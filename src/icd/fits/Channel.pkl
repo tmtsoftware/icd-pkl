@@ -1,0 +1,11 @@
+module icd.fits.Channel
+
+typealias Channel = "IRIS-IFS" | "IRIS-IMAGER" | "WFOS-RED" | "WFOS-BLUE" | "MODHIS" | "TCS"
+
+const IRIS_IFS     = "IRIS-IFS"
+const IRIS_IMAGER  = "IRIS-IMAGER"
+const MODHIS       = "MODHIS"
+const WFOS_RED     = "WFOS-RED"
+const WFOS_BLUE    = "WFOS-BLUE"
+
+const TCS          = "TCS"

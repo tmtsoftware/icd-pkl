@@ -1,0 +1,12 @@
+module icd.fits.Units
+
+typealias Units =
+  "NoUnits" |
+  "degree" |
+  "mm" |
+  "m"
+
+const NOUNITS = "NoUnits"
+const DEGREES = "degree"
+const MM = "mm"
+const M = "m"

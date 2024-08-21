@@ -1,0 +1,41 @@
+module icd.fits.Subsystem
+
+typealias Subsystem =
+  "ENC" | "SUM" | "STR" | "M2S" | "M3S" | "CLN" | "TINS" | "TCS" |
+  "M1CS" | "APS" | "OSS" | "ESEN" | "NFIRAOS" | "NSCU" | "LGSF" |
+  "AOESW" | "CRYO" | "IRIS" | "MODHIS" | "REFR" | "WFOS" | "CIS" |
+  "CSW" | "DMS" | "ESW" | "SOSS" | "DPS" | "SCMS" | "TEST" | "TEST2"
+
+/// Subsystems
+const ENC     = "ENC"
+const SUM     = "SUM"
+const STR     = "STR"
+const M2S     = "M2S"
+const M3S     = "M3S"
+const CLN     = "CLN"
+const TINS    = "TINS"
+const TCS     = "TCS"
+const M1CS    = "M1CS"
+const APS     = "APS"
+const OSS     = "OSS"
+const ESEN    = "ESEN"
+const NFIRAOS = "NFIRAOS"
+const NSCU    = "NSCU"
+const LGSF    = "LGSF"
+const AOESW   = "AOESW"
+const CRYO    = "CRYO"
+const IRIS    = "IRIS"
+const MODHIS  = "MODHIS"
+const REFR    = "REFR"
+const WFOS    = "WFOS"
+const CIS     = "CIS"
+const CSW     = "CSW"
+const DMS     = "DMS"
+const ESW     = "ESW"
+const SOSS    = "SOSS"
+const DPS     = "DPS"
+const SCMS    = "SCMS"
+const TEST    = "TEST"
+const TEST2   = "TEST2"
+
+
